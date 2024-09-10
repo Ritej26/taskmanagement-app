@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task Management Web App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #add-task-form {
+      width: 50%;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #task-list li {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #task-list li:last-child {
+      border-bottom: none;
+    }
+
+    #task-list li span {
+      font-weight: bold;
+    }
+
+    #task-list li .edit-btn {
+      float: right;
+      margin-right: 10px;
+    }
+
+    #task-list li .delete-btn {
+      float: right;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Management Web App</h1>
+  <form id="add-task-form">
+    <label for="task-name">Task Name:</label>
+    <input type="text" id="task-name" name="task-name"><br><br>
+    <label for="due-date">Due Date:</label>
+    <input type="date" id="due-date" name="due-date"><br><br>
+    <label for="priority">Priority:</label>
+    <select id="priority" name="priority">
+      <option value="1">High</option>
+      <option value="2">Medium</option>
+      <option value="3">Low</option>
+    </select><br><br>
+    <button id="add-task-btn">Add Task</button>
+  </form>
+  <ul id="task-list">
+    <!-- tasks will be displayed here -->
+  </ul>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Add task form submission
+      $('#add-task-form').submit(function (e) {
+        e.preventDefault();
+        var taskName = $('#task-name').val();
+        var dueDate = $('#due-date').val();
+        var priority = $('#priority').val();
+        $.ajax({
+          type: 'POST',
+          url: '/api/tasks',
+          data: { taskName, dueDate, priority },
+          success: function (data) {
+            console.log(data);
+            $('#task-list').append(`
+              <li>
+                <span>${taskName}</span>
+                <span>${dueDate}</span>
+                <span>${priority}</span>
+                <input type="checkbox" id="completed-${data.id}">
+                <button class="edit-btn" data-id="${data.id}">Edit</button>
+                <button class="delete-btn" data-id="${data.id}">Delete</button>
+              </li>
+            `);
+            $('#task-name').val('');
+            $('#due-date').val('');
+            $('#priority').val('');
+          }
+        });
+      });
+
+      // Edit task
+      $(document).on('click', '.edit-btn', function () {
+        var taskId = $(this).data('id');
+        var taskName = $(this).closest('li').find('span:first').text();
+        var dueDate = $(this).closest('li').find('span:nth-child(2)').text();
+        var priority = $(this).closest('li').find('span:nth-child(3)').text();
+        $.ajax({
+          type: 'PUT',
+          url: `/api/tasks/${taskId}`,
+          data: { taskName, dueDate, priority },
+          success: function (data) {
+            console.log(data);
+            $(this).closest('li').find('span:first').text(taskName);
+            $(this).closest('li').find('span:nth-child(2)').text(dueDate);
+            $(this).closest('li').find('span:nth-child(3)').text(priority);
+          }
+        });
+      });
+
+      // Delete task
+      $(document).on('click', '.delete-btn', function () {
+        var taskId = $(this).data('id');
+        $.ajax({
+          type: 'DELETE',
+          url: `/api/tasks/${taskId}`,
+          success: function (data) {
+            console.log(data);
+            $(this).closest('li').remove();
+          }
+        });
+      });
+
+      // Mark task as completed
+      $(document).on('change', 'input[type="checkbox"]', function () {
+        var taskId = $(this).closest('li').find('.edit-btn').data('id');  
+     var isCompleted = $(this).is(':checked');  
+     $.ajax({  
+       type: 'PUT',  
+       url: `/api/tasks/${taskId}`,  
+       data: { isCompleted },  
+       success: function (data) {  
+          console.log(data);  
+       }  
+     });  
+  });  
+</script>
+</body>
+</html>
