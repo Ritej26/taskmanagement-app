@@ -35,5 +35,5 @@ This is a simple Task Management Web App built with a .NET Core Web API backend,
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/TaskManagementApp.git
-   cd TaskManagementApp
+   git clone - https://github.com/Ritej26/taskmanagement-app.git
+   cd taskmanagement-app
